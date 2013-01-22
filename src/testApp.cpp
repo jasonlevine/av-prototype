@@ -19,14 +19,19 @@ void testApp::setup(){
     ladies.loadImage("images/ladies.png");
     coolCircle.loadImage("images/cool-circle.png");
     coolHole.loadImage("images/cool-hole.png");
-    blueAura.loadImage("images/blue-aura.png");
     haeckel.loadImage("images/haeckel.png");
-    
+    haeckelScreen.loadImage("images/haeckel.png");
+    lipsPyramid.loadImage("images/BILAL_pyramids-lip1.jpg");
+    test.allocate(coolHole.getPixelsRef());
     //graphics
     ofEnableAlphaBlending();
-    
+    ofBackground(10);
     //
-    circleDegree = 0;
+    
+    fftToLightness.load("shaders/vert.glsl", "shaders/frag.glsl");
+    mandalaScale = 1.0f;
+    
+    shaderFbo.allocate(1200, 1200);
 }
 
 //--------------------------------------------------------------
@@ -41,39 +46,108 @@ void testApp::update(){
 		// take the max, either the smoothed or the incoming:
 		if (fftSmoothed[i] < val[i]) fftSmoothed[i] = val[i];
 	}
-    circleDegree+=fftSmoothed[1]/2.0f;
+    
+    for (int y = 0; y < haeckel.height; y++) {
+        for (int x = 0; x < haeckel.width; x++) {
+            ofColor pixelCol = haeckel.getColor(x, y);
+            float lightness = pixelCol.getLightness();
+            int index = 64 - lightness / 4;
+            float alpha = fftSmoothed[index] * 512;
+            haeckelScreen.setColor(x, y, ofColor(alpha));
+        }
+    }
+    haeckelScreen.update();
+    
+    circleDegree+=0.2f;
     if (circleDegree > 360.0f) {
         circleDegree-=360.0f;
     }
     
-    circleScale = fftSmoothed[50];
+    mandalaScale-=0.001;
+
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
     // draw the fft resutls:
-	ofSetColor(0);
-	
+	//ofSetColor(0);
+	/*
 	float width = (float)(5*128) / nBandsToGet;
 	for (int i = 0;i < nBandsToGet; i++){
 		// (we use negative height here, because we want to flip them
 		// because the top corner is 0,0)
 		ofRect(600+i*width,ofGetHeight()-100,width,-(fftSmoothed[i] * 200));
-	}
-    //float degrees = fftSmoothed[1] * 45.0f;
+	}*/
     
-    ofSetColor(255, 255, 255, 255);
+    if (mandalaScale < 0.5) {
+        ofPushMatrix();
+        ofTranslate(300, 300);
+        ofScale(mandalaScale, mandalaScale);
+        ofTranslate(-8400, -6900);
+        ofSetColor(255, 255, 255, 255);
+        lipsPyramid.draw(0,0, 18000, 12000);
+        ofPopMatrix();
+    }
+    
+    if (mandalaScale > 0.0) {
+        ofPushMatrix();
+        ofTranslate(300, 300);
+        ofScale(mandalaScale, mandalaScale);
+        ofTranslate(-600, -600);
+        
+        
+        ofSetColor(255, 255, 255, 255);
+        ofPushMatrix();
+        ofTranslate(600, 600);
+        ofRotateZ(circleDegree);
+        ofTranslate(-600, -600);
+        coolCircle.draw(0,0, 1200, 1200);
+        ofPopMatrix();
+        
+        ofSetColor(255, 255, 255, 200);
+        haeckelScreen.draw(0,0, 1200, 1200);
+        
+        ofSetColor(255, 255, 255, 200);
+        coolHole.draw(0, 0, 1200, 1200);
+
+        /*
+        shaderFbo.begin();
+        fftToLightness.begin();
+        fftToLightness.setUniformTexture("tex", test, 0 );
+                glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
+        glTexCoord2f(ofGetWidth(), 0); glVertex3f(ofGetWidth(), 0, 0);
+        glTexCoord2f(ofGetWidth(), ofGetHeight()); glVertex3f(ofGetWidth(), ofGetHeight(), 0);
+        glTexCoord2f(0,ofGetHeight());  glVertex3f(0,ofGetHeight(), 0);
+        glEnd();
+        fftToLightness.end();
+        shaderFbo.end();
+        
+        shaderFbo.draw(0, 0);
+         */
+        
+        
+        ofSetColor(255, 255, 255, 255);
+        ofPushMatrix();
+        ofRotateZ(-circleDegree);
+        ladies.draw(0, 0, 390*0.8, 600*0.8);
+        ofPopMatrix();
+        
+        ofPushMatrix();
+        ofTranslate(1200, 1200);
+        ofRotateZ(circleDegree);
+        ladies.draw(0, 0, 390*0.8, 600*0.8);
+        ofPopMatrix();
+        
+        
+        ofPopMatrix();
+    }
     
     
-    ofPushMatrix();
-    ofTranslate(300, 300);
-    ofRotateZ(circleDegree);
-    ofScale(circleScale, circleScale);
-    ofTranslate(-300, -300);
-    coolCircle.draw(0,0, 600, 600);
-    ofPopMatrix();
     
-    coolHole.draw(0,0, 600, 600);
+    ofSetColor(0, 255, 0);
+    ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 610, 10);
+    
 }
 
 

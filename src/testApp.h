@@ -22,9 +22,14 @@ public:
     ofSoundPlayer   audio;
     float 			* fftSmoothed;
     int             nBandsToGet;
+    float           circleDegree;
+    float           mandalaScale;
     
-    ofImage         bilal, aLoveSurreal, ladies, coolCircle, coolHole, blueAura, haeckel;
+    ofImage         bilal, aLoveSurreal, ladies, coolCircle, coolHole, haeckel, haeckelScreen, lipsPyramid;
+    ofTexture       test;
+    ofShader        fftToLightness;
     
-    float           circleDegree, circleScale;
+    ofFbo           shaderFbo;
+
     
 };
