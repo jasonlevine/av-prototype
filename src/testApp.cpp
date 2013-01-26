@@ -14,7 +14,7 @@ void testApp::setup(){
 	nBandsToGet = 128;
     
     //images
-    bilal.loadImage("images/Bilal.png");
+    //bilal.loadImage("images/Bilal.png");
     aLoveSurreal.loadImage("images/a-love-surreal.png");
     ladies.loadImage("images/ladies.png");
     coolCircle.loadImage("images/cool-circle.png");
